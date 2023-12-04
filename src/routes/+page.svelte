@@ -1,6 +1,11 @@
-<h1
-	class="text-red-500 p-8 my-8 rounded-xl text-center opacity-95 max-w-[75%] border-2 text-3xl text-red"
->
-	Testing
-</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	import CountrySelect from './CountrySelect.svelte';
+</script>
+
+<div class="flex w-[60%] max-w-[60%] h-[20rem] mt-40 justify-center">
+	<div class="w-1/2 flex">
+		<div class="flex-1 flex flex-col">
+			<CountrySelect />
+		</div>
+	</div>
+</div>
