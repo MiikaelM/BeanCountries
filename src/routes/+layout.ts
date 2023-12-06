@@ -13,7 +13,7 @@ export async function load({ fetch }) {
             .sort();
  
 
-        const countryList: Array<CountryListElement> = countryNames.map((countryName: string) => {
+        const countries: Array<CountryListElement> = countryNames.map((countryName: string) => {
             return {
                 name: countryName,
                 visited: false
@@ -21,7 +21,7 @@ export async function load({ fetch }) {
         });
         
         return {
-            countryList: countryList
+            countries: countries
         }
         
     } catch (error: unknown) {

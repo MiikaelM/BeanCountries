@@ -2,10 +2,14 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import {
-		countryList,
+		allCountries,
+		visibleCountries,
 		countrySelectScroll,
-		countrySelectExpanded
+		countrySelectExpanded,
+		countrySelectSearch
 	} from '../stores/countrySelectStores';
+
+	let mounted = false;
 
 	function onOverflownScroll(event: Event) {
 		const target = event.target as HTMLDivElement;
@@ -26,21 +30,55 @@
 
 	onMount(() => {
 		setScrollPosition();
+		mounted = true;
 	});
 
 	/**
 	 * Sets the countryListElement.visited property to true and navigates to the country page
 	 */
 	function onCountrySelectClick(countryListElement: CountryListElement) {
-		if (!$countryList) return;
+		if (!$visibleCountries) return;
 		countryListElement.visited = true;
 		goto('/' + countryListElement.name);
 	}
+
+	async function onCountrySelectSearch(countrySelectSearch: string) {
+		try {
+			if (!countrySelectSearch) {
+				$visibleCountries = $allCountries;
+				return;
+			}
+			const response = await fetch(
+				//Can add more than name to search by(?)
+				'https://restcountries.com/v3.1/name/' +
+					countrySelectSearch +
+					'?fields=name'
+			);
+			//Parse to own LIB. Check if empty..
+			const data: CountryApiResponse[] = await response.json();
+			const countryNames: Array<string> = data
+				.map((country: CountryApiResponse) => country.name.common)
+				.sort();
+
+			$visibleCountries = countryNames.map((countryName: string) => {
+				return {
+					name: countryName,
+					visited: false
+				};
+			});
+		} catch (error: unknown) {
+			console.log(error);
+		}
+	}
+
+	$: onCountrySelectSearch($countrySelectSearch);
 </script>
 
 <input
 	class="inline-block w-full styled-input border-t-2 rounded-t"
 	placeholder="Choose or search"
+	disabled={!mounted}
+	bind:value={$countrySelectSearch}
 	on:click={() => ($countrySelectExpanded = true)}
 />
 <div
@@ -48,8 +86,8 @@
 	on:scroll={onOverflownScroll}
 	id="country-select"
 >
-	{#if $countrySelectExpanded && $countryList}
-		{#each $countryList as countryListElement (countryListElement.name)}
+	{#if $countrySelectExpanded && $visibleCountries}
+		{#each $visibleCountries as countryListElement (countryListElement.name)}
 			<button
 				class="p-2 hover:bg-gray-100 cursor-pointer inline-block w-full text-left {countryListElement.visited &&
 					'bg-gray-200'}"
