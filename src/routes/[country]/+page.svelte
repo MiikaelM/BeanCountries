@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
 	export let data;
 	$: country = data?.country;
 
@@ -103,12 +105,11 @@
 			</div>
 			<!-- Does this work? -->
 			<div class="flex w-full xl:w-[40%]">
+				<!-- Should use Maps Javascript API instead of iframe/embed API for more interactability -->
 				<iframe
 					title="map"
 					class="mt-5 mx-5 w-full"
-					src={'https://maps.google.com/maps?q=' +
-						country.name.common +
-						'&amp;output=embed'}
+					src={`https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${country.name.common}`}
 				></iframe>
 			</div>
 		{/if}
