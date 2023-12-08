@@ -5,9 +5,11 @@
 		allCountries,
 		visibleCountries,
 		countrySelectScroll,
-		countrySelectExpanded,
+		countrySelectState,
 		countrySelectSearch
 	} from '../stores/countrySelectStores';
+	import { slide } from 'svelte/transition';
+	import { expoIn, expoOut } from 'svelte/easing';
 
 	let mounted = false;
 
@@ -25,6 +27,9 @@
 		const countrySelect = document.querySelector(
 			'#country-select'
 		) as HTMLDivElement;
+
+		//Why can this be null? Server side things?
+		if (!countrySelect) return;
 		countrySelect.scrollTop = $countrySelectScroll;
 	}
 
@@ -71,6 +76,11 @@
 		}
 	}
 
+	function toggleCountrySelectState() {
+		$countrySelectState =
+			$countrySelectState === 'collapsed' ? 'expanded' : 'collapsed';
+	}
+
 	$: onCountrySelectSearch($countrySelectSearch);
 </script>
 
@@ -79,31 +89,41 @@
 	placeholder="Choose or search"
 	disabled={!mounted}
 	bind:value={$countrySelectSearch}
-	on:click={() => ($countrySelectExpanded = true)}
+	on:click={() => ($countrySelectState = 'expanded')}
 />
 <div
 	class="w-full bg-white shadow-md overflow-auto country-select-scrollbar max-h-full"
 	on:scroll={onOverflownScroll}
 	id="country-select"
 >
-	{#if $countrySelectExpanded && $visibleCountries}
-		{#each $visibleCountries as countryListElement (countryListElement.name)}
-			<button
-				class="p-2 hover:bg-gray-100 cursor-pointer inline-block w-full text-left {countryListElement.visited &&
-					'bg-gray-200'}"
-				on:click={() => onCountrySelectClick(countryListElement)}
-			>
-				{countryListElement.name}
-			</button>
-		{/each}
+	{#if $countrySelectState == 'expanded' && $visibleCountries}
+		<!-- To return to old scroll position after expanding add on:introend={setScrollPosition} -->
+		<div
+			in:slide={{ duration: 300, easing: expoIn }}
+			out:slide={{ duration: 300, easing: expoOut }}
+		>
+			{#each $visibleCountries as countryListElement (countryListElement.name)}
+				<button
+					class="p-2 hover:bg-gray-100 cursor-pointer inline-block w-full text-left {countryListElement.visited &&
+						'bg-gray-200'}"
+					on:click={() => onCountrySelectClick(countryListElement)}
+				>
+					{countryListElement.name}
+				</button>
+			{/each}
+		</div>
 	{/if}
 </div>
 
 <button
 	class="w-full bg-gray-300 text-center cursor-pointer hover:bg-gray-400 shadow-md shadow-gray-400 rounded-b"
-	on:click={() => ($countrySelectExpanded = !$countrySelectExpanded)}
+	on:click={toggleCountrySelectState}
 >
-	<i class="fas {$countrySelectExpanded ? 'fa-caret-up' : 'fa-caret-down'}"></i>
+	<i
+		class="fas {$countrySelectState == 'expanded'
+			? 'fa-caret-up'
+			: 'fa-caret-down'}"
+	></i>
 </button>
 
 <style>

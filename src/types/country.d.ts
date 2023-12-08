@@ -32,3 +32,5 @@ declare interface CountryListElement {
     name: string,
     visited: boolean
 };
+
+type CountrySelectState = 'expanded' | 'collapsed';
