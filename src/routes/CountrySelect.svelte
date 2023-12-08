@@ -8,12 +8,13 @@
 		countrySelectState,
 		countrySelectSearch
 	} from '../stores/countrySelectStores';
+	import { parseCountriesFromResponse } from '$lib/restCountriesResponseService';
 	import { slide } from 'svelte/transition';
 	import { expoIn, expoOut } from 'svelte/easing';
 
 	let mounted = false;
 
-	function onOverflownScroll(event: Event) {
+	function onOverflownScroll(event: Event): void {
 		const target = event.target as HTMLDivElement;
 		$countrySelectScroll = target.scrollTop;
 	}
@@ -22,7 +23,7 @@
 	 * Sets the scroll position of the country select element.
 	 * This is used to restore the scroll position when the user navigates back to the country select page.
 	 */
-	function setScrollPosition() {
+	function setScrollPosition(): void {
 		if (!$countrySelectScroll) return;
 		const countrySelect = document.querySelector(
 			'#country-select'
@@ -41,13 +42,15 @@
 	/**
 	 * Sets the countryListElement.visited property to true and navigates to the country page
 	 */
-	function onCountrySelectClick(countryListElement: CountryListElement) {
+	function onCountrySelectClick(countryListElement: CountryListElement): void {
 		if (!$visibleCountries) return;
 		countryListElement.visited = true;
 		goto('/' + countryListElement.name);
 	}
 
-	async function onCountrySelectSearch(countrySelectSearch: string) {
+	async function onCountrySelectSearch(
+		countrySelectSearch: string
+	): Promise<void> {
 		try {
 			if (!countrySelectSearch) {
 				$visibleCountries = $allCountries;
@@ -59,24 +62,13 @@
 					countrySelectSearch +
 					'?fields=name'
 			);
-			//Parse to own LIB. Check if empty..
-			const data: CountryApiResponse[] = await response.json();
-			const countryNames: Array<string> = data
-				.map((country: CountryApiResponse) => country.name.common)
-				.sort();
-
-			$visibleCountries = countryNames.map((countryName: string) => {
-				return {
-					name: countryName,
-					visited: false
-				};
-			});
+			$visibleCountries = await parseCountriesFromResponse(response);
 		} catch (error: unknown) {
 			console.log(error);
 		}
 	}
 
-	function toggleCountrySelectState() {
+	function toggleCountrySelectState(): void {
 		$countrySelectState =
 			$countrySelectState === 'collapsed' ? 'expanded' : 'collapsed';
 	}
