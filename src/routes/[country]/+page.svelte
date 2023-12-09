@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { PUBLIC_GOOGLE_MAPS_API_KEY } from '$env/static/public';
 	import { goto, onNavigate } from '$app/navigation';
-	const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 	export let data;
 	$: country = data?.country;
@@ -125,7 +125,7 @@
 				<iframe
 					title="map"
 					class="mt-5 mx-5 w-full"
-					src={`https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${country.name.common}`}
+					src={`https://www.google.com/maps/embed/v1/place?key=${PUBLIC_GOOGLE_MAPS_API_KEY}&q=${country.name.common}`}
 				></iframe>
 			</div>
 		{/if}
