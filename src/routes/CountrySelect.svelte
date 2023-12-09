@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, onNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import {
 		allCountries,
@@ -12,8 +12,24 @@
 	import { slide } from 'svelte/transition';
 	import { expoIn, expoOut } from 'svelte/easing';
 
+	onNavigate((navigation) => {
+		// @ts-ignore
+		if (!document.startViewTransition) return;
+
+		return new Promise((resolve) => {
+			// @ts-ignore
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
+
 	let mounted = false;
 
+	/**
+	 * Updates the countrySelectScroll store
+	 */
 	function onOverflownScroll(event: Event): void {
 		const target = event.target as HTMLDivElement;
 		$countrySelectScroll = target.scrollTop;
@@ -40,7 +56,7 @@
 	});
 
 	/**
-	 * Sets the countryListElement.visited property to true and navigates to the country page
+	 * Sets the country as visited and navigates to the country page
 	 */
 	function onCountrySelectClick(countryListElement: CountryListElement): void {
 		if (!$visibleCountries) return;
@@ -57,10 +73,7 @@
 				return;
 			}
 			const response = await fetch(
-				//Can add more than name to search by(?)
-				'https://restcountries.com/v3.1/name/' +
-					countrySelectSearch +
-					'?fields=name'
+				`https://restcountries.com/v3.1/name/${countrySelectSearch}?fields=name`
 			);
 			$visibleCountries = await parseCountriesFromResponse(response);
 		} catch (error: unknown) {
@@ -96,8 +109,8 @@
 		>
 			{#each $visibleCountries as countryListElement (countryListElement.name)}
 				<button
-					class="p-2 hover:bg-gray-100 cursor-pointer inline-block w-full text-left {countryListElement.visited &&
-						'bg-gray-200'}"
+					class="p-2 hover:bg-gray-100 cursor-pointer inline-block w-full text-left
+					country-button {countryListElement.visited && 'bg-gray-200'}"
 					on:click={() => onCountrySelectClick(countryListElement)}
 				>
 					{countryListElement.name}
@@ -108,7 +121,7 @@
 </div>
 
 <button
-	class="w-full bg-gray-300 text-center cursor-pointer hover:bg-gray-400 shadow-md shadow-gray-400 rounded-b"
+	class="w-full bg-gray-300 text-center cursor-pointer hover:bg-gray-400 shadow-md shadow-gray-400 rounded-b toggle-button"
 	on:click={toggleCountrySelectState}
 >
 	<i
@@ -119,6 +132,9 @@
 </button>
 
 <style>
+	.toggle-button {
+		view-transition-name: gray-button;
+	}
 	.country-select-scrollbar::-webkit-scrollbar-track {
 		background: #f1f1f1;
 	}

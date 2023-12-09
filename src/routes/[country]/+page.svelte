@@ -1,12 +1,27 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, onNavigate } from '$app/navigation';
 	const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 	export let data;
 	$: country = data?.country;
 
+	//For view transitions API. It works only on Chromium browsers.
+	onNavigate((navigation) => {
+		// This property has not been implemented in TypeScript yet.
+		// @ts-ignore
+		if (!document.startViewTransition) return;
+
+		return new Promise((resolve) => {
+			// @ts-ignore
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
+
 	/**
-	 * Returns an array of languages from the country object.
+	 * Returns an array of languages with length X from the country object.
 	 * By default we show (so return) only the first three languages.
 	 */
 	function getCountryLanguages(
@@ -29,7 +44,7 @@
 
 <div class="flex flex-col xl:mx-0 xl:w-[60%] xl:max-w-[60%] mt-5 xl:mt-20 mx-5">
 	<button
-		class="p-2 bg-gray-300 rounded-lg border-2 border-gray-300 mb-4 hover:bg-gray-400 hover:border-gray-400 shadow-md shadow-gray-400"
+		class="p-2 bg-gray-300 rounded-lg border-2 border-gray-300 mb-4 hover:bg-gray-400 hover:border-gray-400 shadow-md shadow-gray-400 back-button"
 		on:click={() => goto('/')}
 	>
 		<i class="fas fa-reply mr-1"></i>
@@ -39,7 +54,9 @@
 		{#if country}
 			<div class="w-full xl:w-[60%] gap-2">
 				<div class="flex items-center mb-2 border rounded justify-between">
-					<h1 class="text-4xl font-bold">{country.name.common}</h1>
+					<h1 class="text-4xl font-bold country-title">
+						{country.name.common}
+					</h1>
 					<img
 						class="max-h-[4rem] rounded-lg ml-2 shadow-md shadow-gray-600"
 						src={country.flags.svg}
@@ -103,7 +120,6 @@
 					</div>
 				</div>
 			</div>
-			<!-- Does this work? -->
 			<div class="flex w-full xl:w-[40%]">
 				<!-- Should use Maps Javascript API instead of iframe/embed API for more interactability -->
 				<iframe
@@ -115,3 +131,9 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	.back-button {
+		view-transition-name: gray-button;
+	}
+</style>
