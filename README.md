@@ -30,12 +30,12 @@ The application uses the View Transitions API for animating the dropdown and bac
 
 ### Deployment on Vercel:
 
-BeanCountries is deployed on Vercel, making it easily accessible online. You can visit the application at [bean-countries.vercel.app/].
+BeanCountries is deployed on Vercel, making it easily accessible online. You can visit the application at `bean-countries.vercel.app/`.
 
 ## Technologies Used
 
 - SvelteKit
-- Rest Countries API ([https://restcountries.com/])
+- Rest Countries API (https://restcountries.com/)
 - Tailwind CSS
 - Typescript
 - Google Maps API
@@ -48,6 +48,7 @@ BeanCountries is deployed on Vercel, making it easily accessible online. You can
 ```bash
 git clone https://github.com/MiikaelM/BeanCountries.git
 cd BeanCountries
+cp .env.example .env
 npm install
 ```
 
